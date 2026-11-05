@@ -33,6 +33,8 @@
   安全组只放行 443，连 8766 都不用放行
 - 本站只展示帮助文档，没有课表数据和任何写接口，但仍建议走 HTTPS
 
+安装前请先读[部署安全指南](https://github.com/suiren0219/astrbot_plugin_schedule_lite/blob/main/docs/deploy-security.md)（端口放行 + IP 保护）。
+
 ## 安装
 
 1. 把 `astrbot_plugin_schedule_lite_web` 目录放进 AstrBot 的 `data/plugins/`

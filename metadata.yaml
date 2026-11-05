@@ -2,7 +2,7 @@ name: astrbot_plugin_schedule_lite_web
 display_name: 课表 Lite 网页伴侣
 short_desc: 把课表 Lite 的使用手册上线为只读网页，群里发链接不发图片
 desc: 课表 Lite 的附属插件：在 AstrBot 所在服务器上启动一个独立的只读 HTTP 服务，把完整使用手册渲染成移动端友好的网页（自动跟随系统深色模式）。群里发送 /课表网页 即可获得网页链接，不再刷一屏图片。支持自定义对外访问地址（个人域名反代），内置指令别名与文档热更新（跟随主插件版本自动刷新）。⚠️ 需要在云服务器安全组/防火墙放行配置的端口（TCP 入方向）。本插件只展示帮助内容，不提供任何课表数据端点，课表数据仍只保存在机器人本地。
-version: v0.1.0
+version: v0.1.1
 astrbot_version: ">=4.10.4"
 author: suiren0219
 repo: https://github.com/suiren0219/astrbot_plugin_schedule_lite_web

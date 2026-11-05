@@ -75,6 +75,19 @@ a.cardlink b{font-size:16px}
 a.cardlink small{display:block;color:var(--muted);margin-top:6px;line-height:1.6}
 .warn{background:var(--accent-soft);border:1px solid var(--accent);border-radius:14px;
   padding:10px 14px;font-size:14px;margin:14px 0}
+/* 安全提醒弹窗 */
+.modal-mask{position:fixed;inset:0;background:rgba(8,12,24,.62);backdrop-filter:blur(3px);
+  display:grid;place-items:center;padding:20px;z-index:50}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:520px;
+  width:100%;padding:22px 24px;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+.modal h3{margin:0 0 10px;font-size:18px;display:flex;align-items:center;gap:8px}
+.modal p{margin:8px 0;font-size:14px;color:var(--text)}
+.modal ul{margin:8px 0 8px 20px;padding:0}
+.modal li{margin:5px 0;font-size:14px}
+.modal .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.modal button{border:none;border-radius:12px;padding:9px 18px;font-size:14px;font-weight:650;
+  cursor:pointer;background:var(--accent);color:#fff}
+.modal button.ghost{background:var(--soft);color:var(--text);border:1px solid var(--line);text-decoration:none}
 """
 
 PAGE_TMPL = """<!doctype html>
@@ -96,7 +109,49 @@ PAGE_TMPL = """<!doctype html>
   <a href="{repo}" target="_blank" rel="noopener">GitHub 仓库</a>
 </footer>
 </div>
+{modal}
+<script>
+function slCloseModal() {{
+  document.getElementById('sl-modal')?.remove();
+  try {{ sessionStorage.setItem('sl-web-security-ack', '1'); }} catch (e) {{}}
+}}
+function slOpenModal() {{
+  const m = document.getElementById('sl-modal');
+  if (m) m.style.display = 'grid';
+}}
+</script>
 </body></html>"""
+
+# 安全提醒弹窗（裸 IP 模式才注入）
+SECURITY_MODAL = """
+<div class="modal-mask" id="sl-modal" onclick="if(event.target===this) slCloseModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="部署安全提醒">
+    <h3>⚠️ 部署安全提醒</h3>
+    <p>本站当前通过 <b>裸 IP:端口</b> 对外访问。把这个链接发到群里，等于把
+    <b>服务器 IP 公开给所有人</b>——IP 一旦泄露，可能被端口扫描、爆破等攻击波及。</p>
+    <ul>
+      <li>请在云服务器<b>安全组 / 防火墙</b>只放行必要端口（本站端口、443）</li>
+      <li><b>强烈建议</b>用域名 + HTTPS 反代隐藏源站 IP，并在网页伴侣配置
+        <code>external_base_url</code> 为域名地址（配置好后本弹窗不再出现）</li>
+      <li>最稳组合：<code>web_host=127.0.0.1</code> + 域名反代，安全组只放行 443</li>
+    </ul>
+    <p style="color:var(--muted)">完整指南见主插件仓库 <code>docs/deploy-security.md</code>。</p>
+    <div class="modal-actions">
+      <a class="ghost modal-btn" href="{repo}/blob/main/docs/deploy-security.md" target="_blank" rel="noopener"
+         style="border-radius:12px;padding:9px 18px;font-size:14px;display:inline-block"
+         onclick="slCloseModal()">查看安全指南</a>
+      <button onclick="slCloseModal()">我知道了</button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {{
+  var shown = false;
+  try {{ shown = sessionStorage.getItem('sl-web-security-ack') === '1'; }} catch (e) {{}}
+  if (!shown) slOpenModal();
+}}());
+</script>
+"""
 
 
 def _inline(text: str) -> str:
@@ -250,7 +305,7 @@ def split_sections(md: str) -> list[tuple[str, str]]:
     "schedule_lite_web",
     "suiren0219",
     "课表 Lite 网页伴侣：把使用手册上线为只读网页，群里发链接不发图",
-    "v0.1.0",
+    "v0.1.1",
 )
 class ScheduleLiteWebPlugin(Star):
     """独立 HTTP 服务 + /课表网页 指令；不提供任何课表数据端点。"""
@@ -346,10 +401,16 @@ class ScheduleLiteWebPlugin(Star):
 
     # ------------------------------------------------------------- 页面
 
+    def _external_configured(self) -> bool:
+        """是否配置了对外域名；未配置 = 裸 IP 模式，页面会弹安全提醒。"""
+        return bool(str(self._cfg("external_base_url", "") or "").strip())
+
     def _render(self, title: str, subtitle: str, body: str) -> str:
+        # 裸 IP 模式下每次页面加载都注入安全提醒弹窗（每个会话只自动弹一次）
+        modal = "" if self._external_configured() else SECURITY_MODAL.format(repo=MAIN_PLUGIN_REPO)
         return PAGE_TMPL.format(
             title=escape(title), subtitle=escape(subtitle), body=body,
-            css=PAGE_CSS, repo=MAIN_PLUGIN_REPO,
+            css=PAGE_CSS, repo=MAIN_PLUGIN_REPO, modal=modal,
         )
 
     async def _h_index(self, request: web.Request) -> web.Response:
