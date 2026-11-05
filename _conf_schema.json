@@ -1,0 +1,32 @@
+{
+  "web_enabled": {
+    "description": "🌐 启用网页服务",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后只保留 /课表网页 指令（此时会回退到自定义地址或本机 IP 拼出的链接，服务没启动时链接打不开）。"
+  },
+  "web_host": {
+    "description": "🏠 监听地址",
+    "type": "string",
+    "default": "0.0.0.0",
+    "hint": "0.0.0.0 表示监听所有网卡；只在本机反代可改 127.0.0.1 更安全。"
+  },
+  "web_port": {
+    "description": "🔌 监听端口",
+    "type": "int",
+    "default": 8766,
+    "hint": "⚠️ 云服务器必须在安全组 / 防火墙放行该端口（TCP 入方向），否则外部无法访问。改端口后记得同步放行。"
+  },
+  "external_base_url": {
+    "description": "🔗 对外访问地址（个人域名）",
+    "type": "string",
+    "default": "",
+    "hint": "群里发的链接前缀，例如 https://kb.example.com 或 https://example.com/schedule（反代场景）。留空时用 http://本机IP:端口 拼接。"
+  },
+  "main_plugin_dir": {
+    "description": "📁 主插件目录（可选）",
+    "type": "string",
+    "default": "",
+    "hint": "astrbot_plugin_schedule_lite 的目录路径，用于读取最新版 docs/help.md。留空时自动按同级目录查找，找不到会退回本插件自带的文档副本。"
+  }
+}
