@@ -87,3 +87,9 @@ server {
 ## 相关仓库
 
 - 主插件：[astrbot_plugin_schedule_lite](https://github.com/suiren0219/astrbot_plugin_schedule_lite)
+
+## 许可证
+
+本项目以 [GNU Affero General Public License v3.0](LICENSE)（AGPL-3.0）开源。
+
+允许自由使用、学习、修改及商业分发；若分发修改版，或以网络服务形式向他人提供本项目或修改版，须同样以 AGPL-3.0 公开完整对应源代码。协议全文见 [LICENSE](LICENSE)。
